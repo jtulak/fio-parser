@@ -31,7 +31,7 @@ import numpy
 
 # This class represents a value - which can have multiple runs
 # and statistical properties can be evaluated on them.
-class Value(object):
+class Value(list):
 	def __init__(self, value = None):
 		self._values = []
 		self._min = None
@@ -43,9 +43,6 @@ class Value(object):
 		
 		if (value is not None):
 			self._values.append(value)
-
-	def get(self, index):
-		return self._values[index]
 
 	def add(self, value):
 		self._values.append(value)
@@ -88,23 +85,19 @@ class Value(object):
 			self._q3 = numpy.percentile(self._values, 75)
 		return self._q3
 
-
 	def __str__(self):
-		return "%s\t%s\t%s\t%s\t%s\t%s" % (
-			str(self.min()),
-			str(self.q1()),
-			str(self.med()),
-			str(self.q3()),
-			str(self.max()),
-			str(self.avg()),
-		)
+		return str(self._values)
+	
+	def __len__(self):
+		return len(self._values)
 
-	@staticmethod
-	def get_col_names(prefix = ""):
-		return "%smin\t%sq1\t%smed\t%sq3\t%smax\t%savg" % (
-				prefix, prefix, prefix, prefix, prefix, prefix
-			)
-		pass
+	def __getitem__(self, key):
+		return self._values[key]
+
+	def __iter__(self):
+		for item in self._values:
+			yield item
+
 # ..............................
 
 # BIG UGLY WARNING!!!

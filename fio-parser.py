@@ -47,7 +47,7 @@ def parse(jobs):
 					name_split[4],
 					int(job.read_status.bandwidth.med()),
 					int(job.write_status.bandwidth.med()),
-					job.cpu_usage.get(0).user
+					job.cpu_usage[0].user
 				)
 
 #
