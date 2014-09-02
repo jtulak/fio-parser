@@ -32,11 +32,17 @@ def is_number(obj):
 # ----------------------------------------------------------------------------
 
 
-# This class represents a value - which can have multiple runs
-# and statistical properties can be evaluated on them.
+""" This class represents a value - which can have multiple runs
+	and statistical properties can be evaluated on them.
+
+	Unit is an optional argument that can contain unit of the values, 
+	like 'kB', or '%'.
+"""
 class ValuesList(list):
-	def __init__(self, value = None):
+	def __init__(self, value = None, unit = ''):
 		self._values = []
+		self._unit = unit
+	
 		self._min = None
 		self._max = None
 		self._q1 = None
@@ -54,7 +60,7 @@ class ValuesList(list):
 	""" Add a new item into the list. If only_numeric is set to True,
 		non-number values raise an exception.
 	"""
-	def add(self, value, only_numeric = False):
+	def add(self, value, only_numeric = True):
 		if is_number(value):
 			self._values.append(value)
 		else:
@@ -63,7 +69,7 @@ class ValuesList(list):
 				try:
 					self._values.append(int(value))
 				except ValueError:
-					self._values.append(float(ValuesList))
+					self._values.append(float(value))
 			except (TypeError, ValueError):
 				if only_numeric:
 					raise Exception("Added value is not a number: %s" % str(value))
@@ -78,6 +84,9 @@ class ValuesList(list):
 		self._q3 = None
 		self._med = None
 		self._avg = None
+
+	def unit(self):
+		return self._unit
 
 	def min(self):
 		if not self._numeric:
@@ -122,7 +131,7 @@ class ValuesList(list):
 		return self._q3
 
 	def __str__(self):
-		return str(self._values)
+		return str(self._values)+str(self._unit)
 	
 	def __len__(self):
 		return len(self._values)
@@ -181,17 +190,38 @@ class Iter(object):
 
 class RWStatus(object):
 	def __init__(self, fields = None):
-		self.total_io = ValuesList()
-		self.bandwidth = ValuesList()
+		self.total_io = ValuesList(unit="B")
+		self.bandwidth = ValuesList(unit="B")
 		self.iops = ValuesList()
-		self.runtime = ValuesList()
+		self.runtime = ValuesList(unit="ms")
 		Latency = namedtuple("Latency", "min max mean deviation")
 		LatencyBW = namedtuple("Latency", "min max mean percentage deviation")
-		self.submission_latency = Latency(ValuesList(), ValuesList(), ValuesList(), ValuesList())
-		self.completion_latency = Latency(ValuesList(), ValuesList(), ValuesList(), ValuesList())
+		self.submission_latency = Latency(
+				ValuesList(unit="ms"), 
+				ValuesList(unit="ms"), 
+				ValuesList(unit="ms"), 
+				ValuesList(unit="ms")
+				)
+		self.completion_latency = Latency(
+				ValuesList(unit="ms"), 
+				ValuesList(unit="ms"), 
+				ValuesList(unit="ms"), 
+				ValuesList(unit="ms")
+				)
 		self.completion_latency_percentiles = ValuesList()
-		self.total_latency = Latency(ValuesList(), ValuesList(), ValuesList(), ValuesList())
-		self.bw = LatencyBW(ValuesList(), ValuesList(), ValuesList(), ValuesList(), ValuesList())
+		self.total_latency = Latency(
+				ValuesList(unit="ms"), 
+				ValuesList(unit="ms"), 
+				ValuesList(unit="ms"), 
+				ValuesList(unit="ms")
+				)
+		self.bw = LatencyBW(
+				ValuesList(unit="ms"), 
+				ValuesList(unit="ms"), 
+				ValuesList(unit="ms"), 
+				ValuesList(unit="%"),
+				ValuesList(unit="ms"),
+				)
 
 		if (fields is not None):
 			self.add(fields)
@@ -201,31 +231,31 @@ class RWStatus(object):
 
 		self.total_io.add(int( fields[int(i.inc())])*1024)
 		self.bandwidth.add(int( fields[int(i.inc())])*1024)
-		self.iops.add(int( fields[int(i.inc())]))
-		self.runtime.add(int( fields[int(i.inc())]))
+		self.iops.add( fields[int(i.inc())])
+		self.runtime.add( fields[int(i.inc())])
 
-		self.submission_latency.min.add(int(fields[int(i.inc())]))
-		self.submission_latency.max.add(int(fields[int(i.inc())]))
-		self.submission_latency.mean.add(float(fields[int(i.inc())]))
-		self.submission_latency.deviation.add(float(fields[int(i.inc())]))
+		self.submission_latency.min.add(fields[int(i.inc())])
+		self.submission_latency.max.add(fields[int(i.inc())])
+		self.submission_latency.mean.add(fields[int(i.inc())])
+		self.submission_latency.deviation.add(fields[int(i.inc())])
 		
-		self.completion_latency.min.add(int(fields[int(i.inc())]))
-		self.completion_latency.max.add(int(fields[int(i.inc())]))
-		self.completion_latency.mean.add(float(fields[int(i.inc())]))
-		self.completion_latency.deviation.add(float(fields[int(i.inc())]))
+		self.completion_latency.min.add(fields[int(i.inc())])
+		self.completion_latency.max.add(fields[int(i.inc())])
+		self.completion_latency.mean.add(fields[int(i.inc())])
+		self.completion_latency.deviation.add(fields[int(i.inc())])
 
-		self.completion_latency_percentiles.add(fields[int(i):int(i+20)])
+		self.completion_latency_percentiles.add(fields[int(i):int(i+20)], False)
 
-		self.total_latency.min.add(int(fields[int(i.inc())]))
-		self.total_latency.max.add(int(fields[int(i.inc())]))
-		self.total_latency.mean.add(float(fields[int(i.inc())]))
-		self.total_latency.deviation.add(float(fields[int(i.inc())]))
+		self.total_latency.min.add(fields[int(i.inc())])
+		self.total_latency.max.add(fields[int(i.inc())])
+		self.total_latency.mean.add(fields[int(i.inc())])
+		self.total_latency.deviation.add(fields[int(i.inc())])
 		
-		self.bw.min.add(int(fields[int(i.inc())]))
-		self.bw.max.add(int(fields[int(i.inc())]))
-		self.bw.percentage.add(fields[int(i.inc())])
-		self.bw.mean.add(float(fields[int(i.inc())]))
-		self.bw.deviation.add(float(fields[int(i.inc())]))
+		self.bw.min.add(fields[int(i.inc())])
+		self.bw.max.add(fields[int(i.inc())])
+		self.bw.percentage.add(fields[int(i.inc())][:-1])
+		self.bw.mean.add(fields[int(i.inc())])
+		self.bw.deviation.add(fields[int(i.inc())])
 		
 		
 	def __str__(self):
@@ -243,14 +273,14 @@ class DiskUtilization(object):
 		self.read_ticks = ValuesList()
 		self.write_ticks = ValuesList()
 		self.time_in_queue = ValuesList()
-		self.utilization = ValuesList()
+		self.utilization = ValuesList(unit="%")
 
 		if (fields is not None):
 			self.add(fields)
 
 	def add(self, fields):
 		i = Iter()
-		self.disk_name.add(fields[int(i.inc())])
+		self.disk_name.add(fields[int(i.inc())],False)
 		self.read_ios.add(fields[int(i.inc())])
 		self.write_ios.add(fields[int(i.inc())])
 		self.read_merges.add(fields[int(i.inc())])
@@ -258,7 +288,7 @@ class DiskUtilization(object):
 		self.read_ticks.add(fields[int(i.inc())])
 		self.write_ticks.add(fields[int(i.inc())])
 		self.time_in_queue.add(fields[int(i.inc())])
-		self.utilization.add(fields[int(i.inc())])
+		self.utilization.add(fields[int(i.inc())][:-2]) # last item on line
 	# TODO printing
 
 # ..............................
@@ -269,7 +299,14 @@ class FioJob(object):
 		self.read_status = RWStatus()
 		self.write_status = RWStatus()
 		
-		self.cpu_usage = ValuesList()
+		CpuUsage = namedtuple("CpuUsage", "user system context_switches major_faults minor_faults")
+		self.cpu_usage = CpuUsage(
+				ValuesList(unit="%"),
+				ValuesList(unit="%"),
+				ValuesList(),
+				ValuesList(),
+				ValuesList(),
+			)
 
 		self.io_depths=ValuesList()
 		self.io_lat_us=ValuesList()
@@ -282,14 +319,11 @@ class FioJob(object):
 		self.read_status.add(fields[int(i):int(i+41)])
 		self.write_status.add(fields[int(i):int(i+41)])
 
-		CpuUsage = namedtuple("CpuUsage", "user system context_switches major_faults minor_faults")
-		self.cpu_usage.add(CpuUsage(
-				user =  fields[int(i.inc())],
-				system =  fields[int(i.inc())],
-				context_switches =  fields[int(i.inc())],
-				major_faults =  fields[int(i.inc())],
-				minor_faults =  fields[int(i.inc())],
-			))
+		self.cpu_usage.user.add(fields[int(i.inc())][:-1])
+		self.cpu_usage.system.add( fields[int(i.inc())][:-1])
+		self.cpu_usage.context_switches.add(fields[int(i.inc())])
+		self.cpu_usage.major_faults.add(fields[int(i.inc())])
+		self.cpu_usage.minor_faults.add(fields[int(i.inc())])
 
 		self.io_depths.add({
 				'1':fields[int(i.inc())],
@@ -299,7 +333,7 @@ class FioJob(object):
 				'16':fields[int(i.inc())],
 				'32':fields[int(i.inc())],
 				'64+':fields[int(i.inc())],
-			})
+			}, False)
 		self.io_lat_us.add({
 				'2':fields[int(i.inc())],
 				'4':fields[int(i.inc())],
@@ -311,7 +345,7 @@ class FioJob(object):
 				'500':fields[int(i.inc())],
 				'750':fields[int(i.inc())],
 				'1000':fields[int(i.inc())],
-			})
+			}, False)
 		self.io_lat_ms.add({
 				'2':fields[int(i.inc())],
 				'4':fields[int(i.inc())],
@@ -325,7 +359,7 @@ class FioJob(object):
 				'1000':fields[int(i.inc())],
 				'2000':fields[int(i.inc())],
 				'2000+':fields[int(i.inc())],
-			})
+			},False)
 		self.disk_utilization.add(fields[int(i):int(i+9)])
 
 		# TODO what are the next fields?
