@@ -23,15 +23,18 @@ import re
 from collections import namedtuple,OrderedDict
 from hurry.filesize import size, iec
 import numpy
+import numbers
 
 
+def is_number(obj):
+	return isinstance(obj, numbers.Number)
 
 # ----------------------------------------------------------------------------
 
 
 # This class represents a value - which can have multiple runs
 # and statistical properties can be evaluated on them.
-class Value(list):
+class ValuesList(list):
 	def __init__(self, value = None):
 		self._values = []
 		self._min = None
@@ -40,12 +43,33 @@ class Value(list):
 		self._q3 = None
 		self._med = None
 		self._avg = None
+
+		# control flag, any string insertion switch it to false to prevents
+		# statistical methods usage
+		self._numeric = True
 		
 		if (value is not None):
 			self._values.append(value)
 
-	def add(self, value):
-		self._values.append(value)
+	""" Add a new item into the list. If only_numeric is set to True,
+		non-number values raise an exception.
+	"""
+	def add(self, value, only_numeric = False):
+		if is_number(value):
+			self._values.append(value)
+		else:
+			# try to convert input to numbers
+			try:
+				try:
+					self._values.append(int(value))
+				except ValueError:
+					self._values.append(float(ValuesList))
+			except (TypeError, ValueError):
+				if only_numeric:
+					raise Exception("Added value is not a number: %s" % str(value))
+				self._values.append(value)
+				self._numeric = False
+
 		# Reset the statistical properties as they are invalid now.
 		# But do not compute them until needed.
 		self._min = None
@@ -56,31 +80,43 @@ class Value(list):
 		self._avg = None
 
 	def min(self):
+		if not self._numeric:
+			raise Exception("ValuesLists are not numeric.")
 		if(self._min is None):
 			self._min = min(self._values)
 		return self._min
 
 	def max(self):
+		if not self._numeric:
+			raise Exception("ValuesLists are not numeric.")
 		if(self._max is None):
 			self._max = max(self._values)
 		return self._max
 
 	def avg(self):
+		if not self._numeric:
+			raise Exception("ValuesLists are not numeric.")
 		if(self._avg is None):
 			self._avg = sum(self._values)/float(len(self._values))
 		return self._avg
 
 	def q1(self):
+		if not self._numeric:
+			raise Exception("ValuesLists are not numeric.")
 		if(self._q1 is None):
 			self._q1 = numpy.percentile(self._values, 25)
 		return self._q1
 
 	def med(self):
+		if not self._numeric:
+			raise Exception("ValuesLists are not numeric.")
 		if(self._med is None):
 			self._med = numpy.percentile(self._values, 50)
 		return self._med
 
 	def q3(self):
+		if not self._numeric:
+			raise Exception("ValuesLists are not numeric.")
 		if(self._q3 is None):
 			self._q3 = numpy.percentile(self._values, 75)
 		return self._q3
@@ -145,17 +181,17 @@ class Iter(object):
 
 class RWStatus(object):
 	def __init__(self, fields = None):
-		self.total_io = Value()
-		self.bandwidth = Value()
-		self.iops = Value()
-		self.runtime = Value()
+		self.total_io = ValuesList()
+		self.bandwidth = ValuesList()
+		self.iops = ValuesList()
+		self.runtime = ValuesList()
 		Latency = namedtuple("Latency", "min max mean deviation")
 		LatencyBW = namedtuple("Latency", "min max mean percentage deviation")
-		self.submission_latency = Latency(Value(), Value(), Value(), Value())
-		self.completion_latency = Latency(Value(), Value(), Value(), Value())
-		self.completion_latency_percentiles = Value()
-		self.total_latency = Latency(Value(), Value(), Value(), Value())
-		self.bw = LatencyBW(Value(), Value(), Value(), Value(), Value())
+		self.submission_latency = Latency(ValuesList(), ValuesList(), ValuesList(), ValuesList())
+		self.completion_latency = Latency(ValuesList(), ValuesList(), ValuesList(), ValuesList())
+		self.completion_latency_percentiles = ValuesList()
+		self.total_latency = Latency(ValuesList(), ValuesList(), ValuesList(), ValuesList())
+		self.bw = LatencyBW(ValuesList(), ValuesList(), ValuesList(), ValuesList(), ValuesList())
 
 		if (fields is not None):
 			self.add(fields)
@@ -199,15 +235,15 @@ class RWStatus(object):
 
 class DiskUtilization(object):
 	def __init__(self, fields = None):
-		self.disk_name = Value()
-		self.read_ios = Value()
-		self.write_ios = Value()
-		self.read_merges = Value()
-		self.write_merges = Value()
-		self.read_ticks = Value()
-		self.write_ticks = Value()
-		self.time_in_queue = Value()
-		self.utilization = Value()
+		self.disk_name = ValuesList()
+		self.read_ios = ValuesList()
+		self.write_ios = ValuesList()
+		self.read_merges = ValuesList()
+		self.write_merges = ValuesList()
+		self.read_ticks = ValuesList()
+		self.write_ticks = ValuesList()
+		self.time_in_queue = ValuesList()
+		self.utilization = ValuesList()
 
 		if (fields is not None):
 			self.add(fields)
@@ -233,11 +269,11 @@ class FioJob(object):
 		self.read_status = RWStatus()
 		self.write_status = RWStatus()
 		
-		self.cpu_usage = Value()
+		self.cpu_usage = ValuesList()
 
-		self.io_depths=Value()
-		self.io_lat_us=Value()
-		self.io_lat_ms=Value()
+		self.io_depths=ValuesList()
+		self.io_lat_us=ValuesList()
+		self.io_lat_ms=ValuesList()
 		self.disk_utilization = DiskUtilization()
 			
 	def add(self, fields):

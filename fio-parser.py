@@ -23,7 +23,7 @@ import sys
 import getopt
 import fileinput
 import re
-from libparse import TestSuite, Value
+from libparse import TestSuite
 
 """
 This function prints results.
