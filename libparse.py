@@ -149,53 +149,51 @@ class RWStatus(object):
 		self.bandwidth = Value()
 		self.iops = Value()
 		self.runtime = Value()
-		self.submission_latency = Value()
-		self.completion_latency = Value() 
-		self.completion_latency_percentiles =  Value()
-		self.total_latency = Value()
-		self.bw = Value()
+		Latency = namedtuple("Latency", "min max mean deviation")
+		LatencyBW = namedtuple("Latency", "min max mean percentage deviation")
+		self.submission_latency = Latency(Value(), Value(), Value(), Value())
+		self.completion_latency = Latency(Value(), Value(), Value(), Value())
+		self.completion_latency_percentiles = Value()
+		self.total_latency = Latency(Value(), Value(), Value(), Value())
+		self.bw = LatencyBW(Value(), Value(), Value(), Value(), Value())
 
 		if (fields is not None):
 			self.add(fields)
 
 	def add(self, fields):
 		i = Iter(0)
-		Latency = namedtuple("Latency", "min max mean deviation")
-		LatencyBW = namedtuple("Latency", "min max mean percentage deviation")
 
 		self.total_io.add(int( fields[int(i.inc())])*1024)
 		self.bandwidth.add(int( fields[int(i.inc())])*1024)
 		self.iops.add(int( fields[int(i.inc())]))
 		self.runtime.add(int( fields[int(i.inc())]))
-		self.submission_latency.add(Latency(
-				min= fields[int(i.inc())],
-				max= fields[int(i.inc())],
-				mean= fields[int(i.inc())],
-				deviation= fields[int(i.inc())]
-			))
-		self.completion_latency.add(Latency(
-				min= fields[int(i.inc())],
-				max= fields[int(i.inc())],
-				mean= fields[int(i.inc())],
-				deviation= fields[int(i.inc())]
-			))
-		self.completion_latency_percentiles.add(fields[int(i):int(i+20)])
-		self.total_latency.add(Latency (
-				min= fields[int(i.inc())],
-				max= fields[int(i.inc())],
-				mean= fields[int(i.inc())],
-				deviation= fields[int(i.inc())]
-			))
-		self.bw.add(LatencyBW(
-				min= fields[int(i.inc())],
-				max= fields[int(i.inc())],
-				percentage= fields[int(i.inc())],
-				mean= fields[int(i.inc())],
-				deviation= fields[int(i.inc())],
-			))
 
+		self.submission_latency.min.add(int(fields[int(i.inc())]))
+		self.submission_latency.max.add(int(fields[int(i.inc())]))
+		self.submission_latency.mean.add(float(fields[int(i.inc())]))
+		self.submission_latency.deviation.add(float(fields[int(i.inc())]))
+		
+		self.completion_latency.min.add(int(fields[int(i.inc())]))
+		self.completion_latency.max.add(int(fields[int(i.inc())]))
+		self.completion_latency.mean.add(float(fields[int(i.inc())]))
+		self.completion_latency.deviation.add(float(fields[int(i.inc())]))
+
+		self.completion_latency_percentiles.add(fields[int(i):int(i+20)])
+
+		self.total_latency.min.add(int(fields[int(i.inc())]))
+		self.total_latency.max.add(int(fields[int(i.inc())]))
+		self.total_latency.mean.add(float(fields[int(i.inc())]))
+		self.total_latency.deviation.add(float(fields[int(i.inc())]))
+		
+		self.bw.min.add(int(fields[int(i.inc())]))
+		self.bw.max.add(int(fields[int(i.inc())]))
+		self.bw.percentage.add(fields[int(i.inc())])
+		self.bw.mean.add(float(fields[int(i.inc())]))
+		self.bw.deviation.add(float(fields[int(i.inc())]))
+		
+		
 	def __str__(self):
-		return "\tTotal IO: %sB, bandwidth: %sB/sec, IOPS: %d, runtime: %d msec" % (size(self.total_io,system=iec), size(self.bandwidth,system=iec), self.iops, self.runtime)
+		return "Total IO: %sB, bandwidth: %sB/sec, IOPS: %d, runtime: %d msec" % (size(self.total_io,system=iec), size(self.bandwidth,system=iec), self.iops, self.runtime)
 
 # ..............................
 
