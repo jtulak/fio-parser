@@ -17,9 +17,9 @@ values are added to a set and basic statistics can be done with them:
 - minimal and maximal value
 - 1st, 2nd (median) and 3rd quartil
 
-*Currently it works only for read/write status. 
-Other data are saved as strings, so they can be read with use of an index.
-See the default parse method.*
+*Currently, percentile lists (like Read status completion latency percentiles)
+are not available for the statistic. You can read them just as list of results
+for each job run using index.*
 
 Printing custom columns
 =======================

@@ -49,7 +49,6 @@ def parse(jobs):
 					int(job.write_status.bandwidth.med()),
 					job.cpu_usage.user[0]
 				)
-			print str(job.read_status.completion_latency_percentiles[0])
 
 #
 #------------- End of the parse() function ---------------

@@ -1,4 +1,4 @@
-# (C)2014 Red Hat, Inc., Jan Tulak <jtulak@redhat.com>                         
+# (C)2014 Red Hat, Inc., Jan Tulak <jtulak@redhat.com>						 
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,31 +20,31 @@ from libfioparser.ValuesList import ValuesList
 from libfioparser.Iter import Iter
 
 class DiskUtilization(object):
-    def __init__(self, fields = None):
-        self.disk_name = ValuesList()
-        self.read_ios = ValuesList()
-        self.write_ios = ValuesList()
-        self.read_merges = ValuesList()
-        self.write_merges = ValuesList()
-        self.read_ticks = ValuesList()
-        self.write_ticks = ValuesList()
-        self.time_in_queue = ValuesList()
-        self.utilization = ValuesList(unit="%")
+	def __init__(self, fields = None):
+		self.disk_name = ValuesList()
+		self.read_ios = ValuesList()
+		self.write_ios = ValuesList()
+		self.read_merges = ValuesList()
+		self.write_merges = ValuesList()
+		self.read_ticks = ValuesList()
+		self.write_ticks = ValuesList()
+		self.time_in_queue = ValuesList()
+		self.utilization = ValuesList(unit="%")
 
-        if (fields is not None):
-            self.add(fields)
+		if (fields is not None):
+			self.add(fields)
 
-    def add(self, fields):
-        i = Iter()
-        self.disk_name.add(fields[int(i.inc())],False)
-        self.read_ios.add(fields[int(i.inc())])
-        self.write_ios.add(fields[int(i.inc())])
-        self.read_merges.add(fields[int(i.inc())])
-        self.write_merges.add(fields[int(i.inc())])
-        self.read_ticks.add(fields[int(i.inc())])
-        self.write_ticks.add(fields[int(i.inc())])
-        self.time_in_queue.add(fields[int(i.inc())])
-        self.utilization.add(fields[int(i.inc())][:-2]) # last item on line
-    # TODO printing
+	def add(self, fields):
+		i = Iter()
+		self.disk_name.add(fields[int(i.inc())],False)
+		self.read_ios.add(fields[int(i.inc())])
+		self.write_ios.add(fields[int(i.inc())])
+		self.read_merges.add(fields[int(i.inc())])
+		self.write_merges.add(fields[int(i.inc())])
+		self.read_ticks.add(fields[int(i.inc())])
+		self.write_ticks.add(fields[int(i.inc())])
+		self.time_in_queue.add(fields[int(i.inc())])
+		self.utilization.add(fields[int(i.inc())][:-2]) # last item on line
+	# TODO printing
 
 

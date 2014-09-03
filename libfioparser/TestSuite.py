@@ -1,4 +1,4 @@
-# (C)2014 Red Hat, Inc., Jan Tulak <jtulak@redhat.com>                      
+# (C)2014 Red Hat, Inc., Jan Tulak <jtulak@redhat.com>					  
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,26 +22,26 @@ from collections import OrderedDict
 
 
 class TestSuite(object):
-    def __init__(self, f):
-        # multiple runs of the same test suite
-        self._results = OrderedDict()
+	def __init__(self, f):
+		# multiple runs of the same test suite
+		self._results = OrderedDict()
 
-        for line in f:
-            self.parse_line(line)
+		for line in f:
+			self.parse_line(line)
 
-    def parse_line(self,line):
+	def parse_line(self,line):
 
-        if (re.match("^3;fio", line)):
-            cols = re.split(";", line)
-            name = cols[2]
-            #name_split = re.split("-", cols[2]))
-            # if this job wasn't found yet, add it to the dict
-            if (not name in self._results):
-                self._results[name] = FioJob(name)
-            # add the job into the list
-            self._results[name].add(cols)
+		if (re.match("^3;fio", line)):
+			cols = re.split(";", line)
+			name = cols[2]
+			#name_split = re.split("-", cols[2]))
+			# if this job wasn't found yet, add it to the dict
+			if (not name in self._results):
+				self._results[name] = FioJob(name)
+			# add the job into the list
+			self._results[name].add(cols)
 
-    # return list of all runs in a single list
-    def get_all(self):
-        return self._results
+	# return list of all runs in a single list
+	def get_all(self):
+		return self._results
 
