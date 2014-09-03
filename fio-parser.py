@@ -23,7 +23,7 @@ import sys
 import getopt
 import fileinput
 import re
-from libparse import TestSuite
+from libfioparser.TestSuite import TestSuite
 
 """
 This function prints results.
@@ -49,6 +49,7 @@ def parse(jobs):
 					int(job.write_status.bandwidth.med()),
 					job.cpu_usage.user[0]
 				)
+			print str(job.read_status.completion_latency_percentiles[0])
 
 #
 #------------- End of the parse() function ---------------
