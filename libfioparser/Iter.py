@@ -17,10 +17,14 @@
 
 from libfioparser import *
 
-# BIG UGLY WARNING!!!
-# This class is not entirely idempotential.
-# Operations like "+" can act unexpectedly: 
-#   "obj + 42" is in fact "obj = obj + 42; return obj"
+""" BIG UGLY WARNING!!!
+
+	This class is not entirely idempotential.
+	Operations like "+" can act unexpectedly: 
+	"obj + 42" is in fact "obj = obj + 42; return obj"
+
+	Aim of this class is a replacement of i++/++i pre/post incrementation
+"""
 class Iter(object):
 	def __init__(self, origin=0, step=1):
 		self.origin = origin

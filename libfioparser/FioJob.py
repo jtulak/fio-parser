@@ -20,6 +20,10 @@ from libfioparser.ValuesList import ValuesList
 from libfioparser.Iter import Iter
 from collections import namedtuple
 
+
+""" Represents a single fio job (identified by its name - it could run 
+	multiple times)
+"""
 class FioJob(object):
 	def __init__(self, name):
 		self.name = name
@@ -39,7 +43,9 @@ class FioJob(object):
 		self.io_lat_us=ValuesList()
 		self.io_lat_ms=ValuesList()
 		self.disk_utilization = DiskUtilization()
-			
+
+	""" Accept list of strings, each string represents one field from fio.
+	"""
 	def add(self, fields):
 		i = Iter(2)
 		i.set(5)
@@ -89,7 +95,6 @@ class FioJob(object):
 			},False)
 		self.disk_utilization.add(fields[int(i):int(i+9)])
 
-		# TODO what are the next fields?
 
 	def __str__(self):
 		return  "%s\n"%(self.name)+\

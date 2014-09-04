@@ -72,6 +72,12 @@ class ValuesList(list):
 		self._med = None
 		self._avg = None
 
+	""" Get value of specific run (according index) with unit. 
+		Shortcut for value[x]+value.unit().
+	"""
+	def s(self, key):
+		 return str(self._values[key])+str(self._unit)
+
 	def unit(self):
 		return self._unit
 
@@ -116,9 +122,6 @@ class ValuesList(list):
 		if(self._q3 is None):
 			self._q3 = numpy.percentile(self._values, 75)
 		return self._q3
-	
-	def s(self, key):
-		 return str(self._values[key])+str(self._unit)
 
 	def __str__(self):
 		return str(self._values)+str(self._unit)
